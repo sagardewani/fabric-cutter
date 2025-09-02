@@ -14,6 +14,7 @@ export interface CalculationResult {
   cuts: CutResult[];
   leftover: number;
   totalUsed: number;
+  pannaSize: number;
 }
 
 // Default weekly sales data
@@ -26,6 +27,9 @@ export const DEFAULT_FABRIC_SIZES: FabricSize[] = [
   { size: 1, weeklyDemand: 1, probability: 0 },
 ];
 
+// Default panna size (fabric width) in centimeters
+export const DEFAULT_PANNA_SIZE = 97;
+
 function calculateProbabilities(fabricSizes: FabricSize[]): FabricSize[] {
   const totalWeeklyDemand = fabricSizes.reduce((sum, item) => sum + item.weeklyDemand, 0);
   return fabricSizes.map(item => ({
@@ -35,7 +39,7 @@ function calculateProbabilities(fabricSizes: FabricSize[]): FabricSize[] {
 }
 
 // Zero-leftover optimization function with priority-based inclusion
-function findZeroLeftoverCombination(totalLength: number, sizes: FabricSize[]): CalculationResult | null {
+function findZeroLeftoverCombination(totalLength: number, sizes: FabricSize[], pannaSize: number): CalculationResult | null {
   // Sort sizes by probability (highest first) to prioritize high-demand sizes
   const sortedByProbability = [...sizes].sort((a, b) => b.probability - a.probability);
   
@@ -104,7 +108,8 @@ function findZeroLeftoverCombination(totalLength: number, sizes: FabricSize[]): 
           return {
             cuts: currentCuts.filter(cut => cut.pieces > 0),
             leftover: 0,
-            totalUsed: totalLength
+            totalUsed: totalLength,
+            pannaSize
           };
         }
         return null;
@@ -200,9 +205,9 @@ function findZeroLeftoverCombination(totalLength: number, sizes: FabricSize[]): 
   return null;
 }
 
-export function calculateOptimalCuts(totalLength: number, customFabricSizes?: FabricSize[]): CalculationResult {
+export function calculateOptimalCuts(totalLength: number, customFabricSizes?: FabricSize[], pannaSize: number = DEFAULT_PANNA_SIZE): CalculationResult {
   if (totalLength <= 0) {
-    return { cuts: [], leftover: 0, totalUsed: 0 };
+    return { cuts: [], leftover: 0, totalUsed: 0, pannaSize };
   }
 
   // Use custom sizes if provided, otherwise use defaults
@@ -210,14 +215,15 @@ export function calculateOptimalCuts(totalLength: number, customFabricSizes?: Fa
   const sizesWithProbabilities = calculateProbabilities(fabricSizes);
 
   // First, try to find a zero-leftover combination
-  const zeroLeftoverResult = findZeroLeftoverCombination(totalLength, sizesWithProbabilities);
+  const zeroLeftoverResult = findZeroLeftoverCombination(totalLength, sizesWithProbabilities, pannaSize);
   if (zeroLeftoverResult) {
     // Sort results by size (largest first)
     zeroLeftoverResult.cuts.sort((a, b) => b.size - a.size);
     return {
       ...zeroLeftoverResult,
       leftover: 0,
-      totalUsed: Math.round(totalLength * 1000) / 1000
+      totalUsed: Math.round(totalLength * 1000) / 1000,
+      pannaSize
     };
   }
 
@@ -299,6 +305,7 @@ export function calculateOptimalCuts(totalLength: number, customFabricSizes?: Fa
   return {
     cuts: finalCuts,
     leftover: Math.round(leftover * 1000) / 1000, // Round to 3 decimal places
-    totalUsed: Math.round(totalUsed * 1000) / 1000
+    totalUsed: Math.round(totalUsed * 1000) / 1000,
+    pannaSize
   };
 }

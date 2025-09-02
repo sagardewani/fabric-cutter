@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Calculator, Scissors, Edit3, RotateCcw } from 'lucide-react';
-import { calculateOptimalCuts, CalculationResult, FabricSize, DEFAULT_FABRIC_SIZES } from '../utils/fabricCalculator';
+import { calculateOptimalCuts, CalculationResult, FabricSize, DEFAULT_FABRIC_SIZES, DEFAULT_PANNA_SIZE } from '../utils/fabricCalculator';
 
 export default function FabricCalculator() {
   const [totalLength, setTotalLength] = useState<string>('');
+  const [pannaSize, setPannaSize] = useState<string>(DEFAULT_PANNA_SIZE.toString());
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [fabricSizes, setFabricSizes] = useState<FabricSize[]>(DEFAULT_FABRIC_SIZES);
@@ -21,14 +22,15 @@ export default function FabricCalculator() {
 
   const handleCalculate = () => {
     const length = parseFloat(totalLength);
-    if (isNaN(length) || length <= 0) {
+    const panna = parseFloat(pannaSize);
+    if (isNaN(length) || length <= 0 || isNaN(panna) || panna <= 0) {
       return;
     }
 
     setIsCalculating(true);
     // Add a small delay for smooth UX
     setTimeout(() => {
-      const calculationResult = calculateOptimalCuts(length, fabricSizes);
+      const calculationResult = calculateOptimalCuts(length, fabricSizes, panna);
       setResult(calculationResult);
       setIsCalculating(false);
     }, 300);
@@ -39,6 +41,14 @@ export default function FabricCalculator() {
     // Allow numbers and decimal points
     if (value === '' || /^\d*\.?\d*$/.test(value)) {
       setTotalLength(value);
+    }
+  };
+
+  const handlePannaSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow numbers and decimal points
+    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+      setPannaSize(value);
     }
   };
 
@@ -120,23 +130,39 @@ export default function FabricCalculator() {
             </div>
           </div>
           <div className="space-y-4">
-            <div>
-              <label htmlFor="fabric-length" className="block text-sm font-semibold text-gray-700 mb-2">
-                Total Fabric Length (meters)
-              </label>
-              <input
-                id="fabric-length"
-                type="text"
-                value={totalLength}
-                onChange={handleInputChange}
-                onKeyPress={handleKeyPress}
-                placeholder="Enter fabric length (e.g., 32.5)"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="fabric-length" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Total Fabric Length (meters)
+                </label>
+                <input
+                  id="fabric-length"
+                  type="text"
+                  value={totalLength}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Enter fabric length (e.g., 32.5)"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg"
+                />
+              </div>
+              <div>
+                <label htmlFor="panna-size" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Panna Size (cm)
+                </label>
+                <input
+                  id="panna-size"
+                  type="text"
+                  value={pannaSize}
+                  onChange={handlePannaSizeChange}
+                  onKeyUp={handleKeyPress}
+                  placeholder="97"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg"
+                />
+              </div>
             </div>
             <button
               onClick={handleCalculate}
-              disabled={!totalLength || parseFloat(totalLength) <= 0 || isCalculating}
+              disabled={!totalLength || parseFloat(totalLength) <= 0 || !pannaSize || parseFloat(pannaSize) <= 0 || isCalculating}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
             >
               {isCalculating ? (
@@ -206,34 +232,48 @@ export default function FabricCalculator() {
                 </div>
 
                 {/* Summary */}
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 rounded-lg p-4 text-center">
-                    <div className="text-2xl font-bold text-blue-600">{formatNumber(result.totalUsed)}m</div>
-                    <div className="text-sm text-blue-700 font-medium">Total Used</div>
-                  </div>
-                  <div className="bg-green-50 rounded-lg p-4 text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {result.cuts.reduce((sum, cut) => sum + cut.pieces, 0)}
+                <div className="mt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <div className="bg-blue-50 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-blue-600">{formatNumber(result.totalUsed)}m</div>
+                      <div className="text-sm text-blue-700 font-medium">Total Used</div>
                     </div>
-                    <div className="text-sm text-green-700 font-medium">Total Pieces</div>
-                  </div>
-                  <div className={`rounded-lg p-4 text-center ${
-                    result.leftover === 0 ? 'bg-emerald-50 border-2 border-emerald-200' : 
-                    result.leftover > 0.1 ? 'bg-amber-50' : 'bg-green-50'
-                  }`}>
-                    <div className={`text-2xl font-bold ${
-                      result.leftover === 0 ? 'text-emerald-600' :
-                      result.leftover > 0.1 ? 'text-amber-600' : 'text-green-600'
+                    <div className="bg-green-50 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {result.cuts.reduce((sum, cut) => sum + cut.pieces, 0)}
+                      </div>
+                      <div className="text-sm text-green-700 font-medium">Total Pieces</div>
+                    </div>
+                    <div className="bg-purple-50 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {formatNumber((parseFloat(totalLength) * result.pannaSize) / 100)}m
+                      </div>
+                      <div className="text-sm text-purple-700 font-medium">Actual Fabric</div>
+                      <div className="flex justify-center">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 border">
+                          📏 {result.pannaSize}cm
+                        </span>
+                      </div>
+                    </div>
+                    <div className={`rounded-lg p-4 text-center ${
+                      result.leftover === 0 ? 'bg-emerald-50 border-2 border-emerald-200' : 
+                      result.leftover > 0.1 ? 'bg-amber-50' : 'bg-green-50'
                     }`}>
-                      {formatNumber(result.leftover)}m
-                    </div>
-                    <div className={`text-sm font-medium ${
-                      result.leftover === 0 ? 'text-emerald-700' :
-                      result.leftover > 0.1 ? 'text-amber-700' : 'text-green-700'
-                    }`}>
-                      {result.leftover === 0 ? '🎯 Zero Leftover!' : 'Leftover'}
+                      <div className={`text-2xl font-bold ${
+                        result.leftover === 0 ? 'text-emerald-600' :
+                        result.leftover > 0.1 ? 'text-amber-600' : 'text-green-600'
+                      }`}>
+                        {formatNumber(result.leftover)}m
+                      </div>
+                      <div className={`text-sm font-medium ${
+                        result.leftover === 0 ? 'text-emerald-700' :
+                        result.leftover > 0.1 ? 'text-amber-700' : 'text-green-700'
+                      }`}>
+                        {result.leftover === 0 ? '🎯 Zero Leftover!' : 'Leftover'}
+                      </div>
                     </div>
                   </div>
+                  
                 </div>
               </>
             ) : (
