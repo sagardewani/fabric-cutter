@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <circle cx="90" cy="90" r="85" fill="url(#bgGradient)" filter="url(#shadow)"/>
+  
+  <!-- Scissors design -->
+  <!-- Left blade -->
+  <path d="M45 67.5 L78.75 101.25 L67.5 112.5 L33.75 78.75 Z" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+  <!-- Right blade -->
+  <path d="M101.25 78.75 L135 45 L146.25 56.25 L112.5 90 Z" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+  
+  <!-- Scissors handle rings -->
+  <circle cx="39.375" cy="73.125" r="11.25" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+  <circle cx="140.625" cy="50.625" r="11.25" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+  
+  <!-- Inner rings -->
+  <circle cx="39.375" cy="73.125" r="6.75" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+  <circle cx="140.625" cy="50.625" r="6.75" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+  
+  <!-- Center screw -->
+  <circle cx="90" cy="90" r="8.5" fill="#64748b" stroke="#475569" stroke-width="2"/>
+  <circle cx="90" cy="90" r="4" fill="#94a3b8"/>
+  
+  <!-- Fabric lines being cut -->
+  <line x1="67.5" y1="123.75" x2="112.5" y2="123.75" stroke="#10b981" stroke-width="9" stroke-linecap="round"/>
+  <line x1="56.25" y1="135" x2="123.75" y2="135" stroke="#059669" stroke-width="9" stroke-linecap="round"/>
+  <line x1="78.75" y1="146.25" x2="101.25" y2="146.25" stroke="#047857" stroke-width="9" stroke-linecap="round"/>
+  
+  <!-- Cut marks for detail -->
+  <path d="M90 123.75 L95 118.75 M90 123.75 L85 118.75" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="15" fill="#2563eb" stroke="#1d4ed8" stroke-width="2"/>
+  
+  <!-- Scissors design -->
+  <!-- Left blade -->
+  <path d="M8 12 L14 18 L12 20 L6 14 Z" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+  <!-- Right blade -->
+  <path d="M18 14 L24 8 L26 10 L20 16 Z" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+  
+  <!-- Scissors handle rings -->
+  <circle cx="7" cy="13" r="2" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+  <circle cx="25" cy="9" r="2" fill="#ffffff" stroke="#e5e7eb" stroke-width="0.5"/>
+  
+  <!-- Center screw -->
+  <circle cx="16" cy="16" r="1.5" fill="#64748b"/>
+  
+  <!-- Fabric lines being cut -->
+  <line x1="12" y1="22" x2="20" y2="22" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
+  <line x1="10" y1="24" x2="22" y2="24" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+  <line x1="14" y1="26" x2="18" y2="26" stroke="#047857" stroke-width="2" stroke-linecap="round"/>
+</svg>

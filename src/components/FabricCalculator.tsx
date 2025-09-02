@@ -65,7 +65,7 @@ export default function FabricCalculator() {
     setEditingSize(null);
   };
 
-  const handleInputKeyPress = (e: React.KeyboardEvent, size: number) => {
+  const handleInputKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       setEditingSize(null);
     }
@@ -75,6 +75,16 @@ export default function FabricCalculator() {
     setFabricSizes(DEFAULT_FABRIC_SIZES);
     setResult(null);
     setEditingSize(null);
+  };
+
+  // Format numbers to show minimal decimal places
+  const formatNumber = (num: number): string => {
+    // If it's a whole number, don't show decimals
+    if (num === Math.floor(num)) {
+      return num.toString();
+    }
+    // Otherwise, show up to 2 decimal places, removing trailing zeros
+    return parseFloat(num.toFixed(2)).toString();
   };
 
   const totalDemand = fabricSizes.reduce((sum, item) => sum + item.weeklyDemand, 0);
@@ -90,11 +100,25 @@ export default function FabricCalculator() {
             <h1 className="text-4xl font-bold text-gray-900">Fabric Cutting Calculator</h1>
           </div>
           <p className="text-gray-600 text-lg">
-            Plan your fabric cuts based on weekly demand probabilities.
+            Smart fabric cutting with zero-leftover optimization based on demand probabilities.
           </p>
         </div>
         {/* Input Card */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6 transition-all duration-300 hover:shadow-xl">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="flex items-center mb-2">
+              <span className="text-blue-600 mr-2">🎯</span>
+              <span className="font-semibold text-blue-800">Smart Zero-Leftover Optimization</span>
+            </div>
+            <p className="text-sm text-blue-700 mb-2">
+              The calculator prioritizes high-demand fabric sizes (≥15% probability) and ensures they're always included. 
+              Lower-demand sizes may be excluded if they prevent achieving zero leftover.
+            </p>
+            <div className="text-xs text-blue-600">
+              <span className="font-medium">Priority system:</span> High-demand sizes are guaranteed inclusion, 
+              while low-demand sizes are optional for optimal cutting.
+            </div>
+          </div>
           <div className="space-y-4">
             <div>
               <label htmlFor="fabric-length" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -133,11 +157,22 @@ export default function FabricCalculator() {
         {/* Results Card */}
         {result && (
           <div className="bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+            {/* Zero Leftover Success Banner */}
+            {result.leftover === 0 && (
+              <div className="bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg p-4 mb-6 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <span className="text-2xl mr-2">🎯</span>
+                  <span className="text-lg font-bold">Perfect Cut Achieved!</span>
+                </div>
+                <p className="text-emerald-100">Zero leftover fabric - maximum efficiency reached!</p>
+              </div>
+            )}
+            
             <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
               <div className="bg-green-100 p-2 rounded-lg mr-3">
                 <Scissors className="w-6 h-6 text-green-600" />
               </div>
-              Optimal Cut Plan
+              Optimal Cut Plan {result.leftover === 0 && <span className="ml-2 text-emerald-600">✨</span>}
             </h2>
 
             {result.cuts.length > 0 ? (
@@ -152,16 +187,18 @@ export default function FabricCalculator() {
                       </tr>
                     </thead>
                     <tbody>
-                      {result.cuts.map((cut, index) => (
+                      {result.cuts
+                        .sort((a, b) => b.pieces - a.pieces) // Sort by pieces (highest first)
+                        .map((cut, index) => (
                         <tr 
                           key={cut.size} 
                           className={`border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 ${
                             index % 2 === 0 ? 'bg-gray-25' : 'bg-white'
                           }`}
                         >
-                          <td className="py-3 px-4 font-medium text-gray-900">{cut.size}m</td>
+                          <td className="py-3 px-4 font-medium text-gray-900">{formatNumber(cut.size)}m</td>
                           <td className="py-3 px-4 text-center text-gray-700">{cut.pieces}</td>
-                          <td className="py-3 px-4 text-right font-medium text-gray-900">{cut.total.toFixed(2)}m</td>
+                          <td className="py-3 px-4 text-right font-medium text-gray-900">{formatNumber(cut.total)}m</td>
                         </tr>
                       ))}
                     </tbody>
@@ -171,7 +208,7 @@ export default function FabricCalculator() {
                 {/* Summary */}
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-blue-50 rounded-lg p-4 text-center">
-                    <div className="text-2xl font-bold text-blue-600">{result.totalUsed.toFixed(2)}m</div>
+                    <div className="text-2xl font-bold text-blue-600">{formatNumber(result.totalUsed)}m</div>
                     <div className="text-sm text-blue-700 font-medium">Total Used</div>
                   </div>
                   <div className="bg-green-50 rounded-lg p-4 text-center">
@@ -181,17 +218,20 @@ export default function FabricCalculator() {
                     <div className="text-sm text-green-700 font-medium">Total Pieces</div>
                   </div>
                   <div className={`rounded-lg p-4 text-center ${
+                    result.leftover === 0 ? 'bg-emerald-50 border-2 border-emerald-200' : 
                     result.leftover > 0.1 ? 'bg-amber-50' : 'bg-green-50'
                   }`}>
                     <div className={`text-2xl font-bold ${
+                      result.leftover === 0 ? 'text-emerald-600' :
                       result.leftover > 0.1 ? 'text-amber-600' : 'text-green-600'
                     }`}>
-                      {result.leftover.toFixed(2)}m
+                      {formatNumber(result.leftover)}m
                     </div>
                     <div className={`text-sm font-medium ${
+                      result.leftover === 0 ? 'text-emerald-700' :
                       result.leftover > 0.1 ? 'text-amber-700' : 'text-green-700'
                     }`}>
-                      Leftover
+                      {result.leftover === 0 ? '🎯 Zero Leftover!' : 'Leftover'}
                     </div>
                   </div>
                 </div>
@@ -230,18 +270,24 @@ export default function FabricCalculator() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {fabricSizes.map((item) => {
               const percentage = totalDemand > 0 ? ((item.weeklyDemand / totalDemand) * 100).toFixed(1) : '0.0';
+              const isHighPriority = (item.weeklyDemand / totalDemand) >= 0.15; // 15% threshold
               const colorClass = sizeColors[item.size as keyof typeof sizeColors] || 'bg-gray-50 border-gray-300 text-gray-800';
               const isEditing = editingSize === item.size;
               return (
                 <div 
                   key={item.size} 
-                  className={`${colorClass} border rounded-lg p-4 transition-all duration-200 hover:scale-105 hover:shadow-md cursor-pointer ${
+                  className={`${colorClass} border rounded-lg p-4 transition-all duration-200 hover:scale-105 hover:shadow-md cursor-pointer relative ${
                     isEditing ? 'ring-2 ring-blue-500 ring-offset-2' : ''
-                  }`}
+                  } ${isHighPriority ? 'ring-2 ring-emerald-400' : ''}`}
                   onClick={() => handleCardClick(item.size)}
                 >
+                  {isHighPriority && (
+                    <div className="absolute -top-2 -right-2 bg-emerald-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                      ⭐
+                    </div>
+                  )}
                   <div className="text-center">
-                    <div className="font-bold text-xl mb-2">{item.size}m</div>
+                    <div className="font-bold text-xl mb-2">{formatNumber(item.size)}m</div>
                     {isEditing ? (
                       <input
                         type="number"
@@ -249,7 +295,7 @@ export default function FabricCalculator() {
                         value={item.weeklyDemand}
                         onChange={(e) => handleDemandChange(item.size, e.target.value)}
                         onBlur={handleInputBlur}
-                        onKeyPress={(e) => handleInputKeyPress(e, item.size)}
+                        onKeyPress={handleInputKeyPress}
                         className="w-16 px-2 py-1 text-sm border border-gray-300 rounded text-center focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                         autoFocus
                         onClick={(e) => e.stopPropagation()}
@@ -257,7 +303,9 @@ export default function FabricCalculator() {
                     ) : (
                       <div className="text-sm font-medium mb-1">{item.weeklyDemand} pieces</div>
                     )}
-                    <div className="text-xs font-semibold opacity-75">{percentage}%</div>
+                    <div className="text-xs font-semibold opacity-75">
+                      {percentage}% {isHighPriority ? '(Priority)' : '(Optional)'}
+                    </div>
                   </div>
                 </div>
               );
@@ -265,8 +313,22 @@ export default function FabricCalculator() {
           </div>
           
           {totalDemand > 0 && (
-            <div className="mt-4 text-center text-sm text-gray-600">
-              Total weekly demand: <span className="font-semibold">{totalDemand} pieces</span>
+            <div className="mt-4 space-y-2">
+              <div className="text-center text-sm text-gray-600">
+                Total weekly demand: <span className="font-semibold">{totalDemand} pieces</span>
+              </div>
+              <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center text-white mr-2">
+                    ⭐
+                  </div>
+                  <span>Priority sizes (≥15%) - Always included</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-gray-300 rounded-full mr-2"></div>
+                  <span>Optional sizes (&lt;15%) - May be excluded for zero leftover</span>
+                </div>
+              </div>
             </div>
           )}
         </div>
