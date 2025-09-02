@@ -62,6 +62,45 @@ npm run build
 
 The built files will be in the `dist` folder, ready for deployment.
 
+## 🌐 Deployment
+
+### Netlify Deployment
+
+This project is configured for easy Netlify deployment:
+
+1. **Connect your repository** to Netlify
+2. **Build settings** (auto-detected):
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+   - Node version: 18
+
+3. **Deploy**: Netlify will automatically build and deploy your site
+
+#### Troubleshooting Netlify Issues:
+- ✅ **Redirects configured**: `netlify.toml` and `_redirects` handle SPA routing
+- ✅ **Base path set**: Vite config uses relative paths for assets
+- ✅ **Build optimization**: Proper chunk splitting and asset handling
+
+### Other Deployment Options
+
+**Vercel:**
+```bash
+npm run build
+# Upload dist folder to Vercel
+```
+
+**GitHub Pages:**
+```bash
+npm run build
+# Deploy dist folder to gh-pages branch
+```
+
+**Manual hosting:**
+```bash
+npm run build
+# Upload contents of dist folder to your web server
+```
+
 ## 🎮 How to Use
 
 1. **Enter Fabric Length**: Input the total length of fabric you want to cut (e.g., 32.5 meters)
